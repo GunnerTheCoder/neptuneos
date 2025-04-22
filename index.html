@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeptuneOS Preview</title>
+  <style>
+    /* Reset & Body */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; }
+    body { font-family: 'Inter', sans-serif; overflow: hidden; }
+
+    /* Common View Styles */
+    .view {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #fff; text-align: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .view.active { opacity: 1; pointer-events: auto; }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9rem;
+      background: #fff;
+      color: #1e3c72;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 1rem;
+    }
+    button:hover { background: #f0f0f0; }
+    button:disabled { opacity: 0.6; cursor: default; }
+
+    /* View 1: Welcome */
+    #view1 { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+    #view1 h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    #view1 p { font-size: 1rem; }
+
+    /* View 2: Preview */
+    #view2 { background: linear-gradient(135deg, #1e3c72, #2a5298); padding: 2rem; }
+    #view2 p { max-width: 400px; font-size: 1rem; line-height: 1.4; }
+
+    /* View 3: Loading */
+    #view3 { background: #0a0f16; }
+    .loading-msg { font-size: 1.2rem; margin-bottom: 1rem; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-text { font-size: 1rem; }
+
+    /* View 4: Desktop */
+    #view4 {
+      background: url('wallpaper.jpg') center/cover no-repeat;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+    .desktop-icons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 80px);
+      grid-gap: 20px;
+      padding: 20px;
+      margin-top: 40px;
+    }
+    .desktop-icons .icon {
+      display: flex; flex-direction: column;
+      align-items: center;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .desktop-icons .icon img {
+      width: 48px; height: 48px;
+      margin-bottom: 5px;
+    }
+    .taskbar {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 40px;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+    }
+    .start-button {
+      display: flex; align-items: center;
+      cursor: pointer;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .start-button img {
+      width: 20px; height: 20px;
+      margin-right: 5px;
+    }
+    .taskbar-items {
+      flex: 1;
+      display: flex; align-items: center;
+    }
+    .clock {
+      color: #fff;
+      font-size: 0.9rem;
+      min-width: 60px;
+      text-align: right;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .spinner { width: 30px; height: 30px; border-width: 3px; }
+      #view1 h1 { font-size: 1.75rem; }
+      #view1 p, #view2 p, .loading-msg, .progress-text { font-size: 0.9rem; }
+      button { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
+      .desktop-icons { grid-gap: 15px; padding: 15px; }
+      .desktop-icons .icon img { width: 40px; height: 40px; }
+      .taskbar { height: 35px; padding: 0 8px; }
+      .start-button img { width: 18px; height: 18px; }
+      .clock { font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- View 1: Welcome -->
+  <div id="view1" class="view active">
+    <h1>Welcome to NeptuneOS</h1>
+    <p>Your journey starts here.</p>
+    <button id="getStarted">Get Started</button>
+  </div>
+
+  <!-- View 2: Preview -->
+  <div id="view2" class="view">
+    <p>NeptuneOS is an early preview of an operating system still in development. Experiment with current features and share feedback.</p>
+    <button id="startNeptune">Start NeptuneOS</button>
+  </div>
+
+  <!-- View 3: Loading -->
+  <div id="view3" class="view">
+    <p class="loading-msg">Loading your experience</p>
+    <div class="spinner"></div>
+    <p class="progress-text">Getting things ready (0%)</p>
+  </div>
+
+  <!-- View 4: Desktop -->
+  <div id="view4" class="view">
+    <div class="desktop-icons">
+      <div class="icon" title="My Computer">
+        <img src="icon-mycomputer.png" alt="My Computer" />
+        <span>My Computer</span>
+      </div>
+      <div class="icon" title="Files">
+        <img src="icon-folder.png" alt="Files" />
+        <span>Files</span>
+      </div>
+      <div class="icon" title="Browser">
+        <img src="icon-browser.png" alt="Browser" />
+        <span>Browser</span>
+      </div>
+      <div class="icon" title="Settings">
+        <img src="icon-settings.png" alt="Settings" />
+        <span>Settings</span>
+      </div>
+    </div>
+    <div class="taskbar">
+      <div class="start-button">
+        <img src="icon-start.png" alt="Start" />
+        Start
+      </div>
+      <div class="taskbar-items"></div>
+      <div class="clock" id="clock"></div>
+    </div>
+  </div>
+
+  <script>
+    const showView = id => {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    };
+
+    document.getElementById('getStarted').addEventListener('click', () => showView('view2'));
+    document.getElementById('startNeptune').addEventListener('click', () => {
+      showView('view3');
+      const progressText = document.querySelector('.progress-text');
+      let percent = 0;
+      const startTime = Date.now();
+      const updateProgress = () => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= 10000) {
+          percent = 100;
+          progressText.textContent = `Getting things ready (${percent}%)`;
+          setTimeout(() => {
+            showView('view4');
+            initClock();
+          }, 500);
+        } else {
+          const increment = Math.floor(Math.random() * 7) + 2;
+          percent = Math.min(percent + increment, 99);
+          progressText.textContent = `Getting things ready (${percent}%)`;
+          setTimeout(updateProgress, Math.random() * 800 + 200);
+        }
+      };
+      updateProgress();
+    });
+
+    // Clock for taskbar
+    function initClock() {
+      const clockEl = document.getElementById('clock');
+      const updateClock = () => {
+        const now = new Date();
+        let h = now.getHours();
+        const m = now.getMinutes();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        clockEl.textContent = `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+      };
+      updateClock();
+      setInterval(updateClock, 60000);
+    }
+  </script>
+</body>
+</html>
